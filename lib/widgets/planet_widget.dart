@@ -14,30 +14,32 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
   late AnimationController _controller;
   List<UserNode> nodes = [];
 
-  final double radius = 150.0; // Radius of the sphere
+  final double radius = 160.0; // Radius of the sphere
 
   // Rotation angles
   double angleX = 0;
   double angleY = 0;
 
   // Auto-rotation speeds
-  final double velocityX = 0.002;
-  final double velocityY = 0.002;
+  final double velocityX = 0.003;
+  final double velocityY = 0.003;
 
   @override
   void initState() {
     super.initState();
     _generateNodes();
 
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 1))
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 16))
       ..addListener(_updateRotation)
       ..repeat();
   }
 
   void _generateNodes() {
-    // Generate 30 points using Fibonacci sphere algorithm
-    int numNodes = 30;
+    // Generate 45 points using Fibonacci sphere algorithm for a denser planet
+    int numNodes = 45;
     double phi = pi * (3.0 - sqrt(5.0)); // golden angle
+
+    final List<String> fakeNames = ['温柔的鱼', '一只猫', '夏天的风', '无名之辈', '星空之下', '流浪者', 'Soul', '听雨', '微光'];
 
     for (int i = 0; i < numNodes; i++) {
       double y = 1 - (i / (numNodes - 1)) * 2; // y goes from 1 to -1
@@ -50,9 +52,9 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
 
       nodes.add(UserNode(
         id: i.toString(),
-        name: 'User $i',
-        avatarUrl: String.fromCharCode(65 + (i % 26)), // A, B, C...
-        isOnline: i % 3 == 0, // Random online status
+        name: fakeNames[i % fakeNames.length],
+        avatarUrl: '', // Using icon instead
+        isOnline: i % 4 == 0,
         x: x * radius,
         y: y * radius,
         z: z * radius,
@@ -93,8 +95,8 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
       // Adjust rotation speed based on drag
-      angleX = details.delta.dy * 0.01;
-      angleY = details.delta.dx * 0.01;
+      angleX = details.delta.dy * 0.005;
+      angleY = details.delta.dx * 0.005;
       _applyRotation();
     });
   }
@@ -116,27 +118,43 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
       child: Container(
         color: Colors.transparent, // Capture gestures
         width: MediaQuery.of(context).size.width,
-        height: 400,
+        height: 450,
         child: Center(
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // Central "Me" text or graphic
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primaryTeal.withAlpha(50),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryTeal.withAlpha(30),
+                      blurRadius: 40,
+                      spreadRadius: 20,
+                    )
+                  ]
+                ),
+              ),
+
               // Draw the nodes
               ...sortedNodes.map((node) {
                 // Projection parameters
                 double scale = (radius + node.z) / (radius * 2); // 0 to 1 based on depth
-                // Add minimum scale to keep them visible
-                scale = 0.5 + (scale * 0.5);
+                scale = 0.4 + (scale * 0.8); // 0.4 to 1.2
 
                 // Add perspective effect to X and Y
-                double perspective = 800; // view distance
+                double perspective = 1000; // view distance
                 double factor = perspective / (perspective - node.z);
 
                 double left = node.x * factor;
                 double top = node.y * factor;
 
                 // Opacity fades slightly when in the back
-                double opacity = 0.4 + (scale * 0.6);
+                double opacity = 0.3 + (scale * 0.7);
                 if (opacity > 1) opacity = 1;
                 if (opacity < 0) opacity = 0;
 
@@ -159,34 +177,41 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
   }
 
   Widget _buildNodeWidget(UserNode node) {
+    bool isSpecial = int.parse(node.id) % 7 == 0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Stack(
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: isSpecial ? 54 : 46,
+              height: isSpecial ? 54 : 46,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.primaries[int.parse(node.id) % Colors.primaries.length].withAlpha(204), // 0.8 * 255
-                border: Border.all(color: Colors.white24, width: 2),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.primaries[int.parse(node.id) % Colors.primaries.length].withAlpha(200),
+                    Colors.primaries[(int.parse(node.id) + 1) % Colors.primaries.length].withAlpha(200),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: Colors.white.withAlpha(150), width: 1.5),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withAlpha(51), // 0.2 * 255
-                    blurRadius: 10,
-                    spreadRadius: 2,
-                  )
+                  if (isSpecial)
+                    BoxShadow(
+                      color: Colors.white.withAlpha(100),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    )
                 ]
               ),
               child: Center(
-                child: Text(
-                  node.avatarUrl,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Icon(
+                  Icons.person,
+                  color: Colors.white.withAlpha(220),
+                  size: isSpecial ? 32 : 26,
                 ),
               ),
             ),
@@ -195,8 +220,8 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  width: 14,
-                  height: 14,
+                  width: 12,
+                  height: 12,
                   decoration: BoxDecoration(
                     color: Colors.greenAccent,
                     shape: BoxShape.circle,
@@ -208,11 +233,14 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
         ),
         const SizedBox(height: 4),
         Text(
-          node.name,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+          isSpecial ? '99% 匹配' : node.name,
+          style: TextStyle(
+            color: isSpecial ? AppColors.primaryTeal : Colors.white70,
+            fontSize: isSpecial ? 12 : 11,
+            fontWeight: isSpecial ? FontWeight.bold : FontWeight.normal,
+            shadows: const [
+              Shadow(color: Colors.black54, blurRadius: 2, offset: Offset(1, 1))
+            ]
           ),
         )
       ],

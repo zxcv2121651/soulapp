@@ -15,9 +15,9 @@ class StarryBackground extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF0F1123),
-            Color(0xFF1B1E38),
-            Color(0xFF101222),
+            Color(0xFF14172B),
+            Color(0xFF262C4E),
+            Color(0xFF1A1D36),
           ],
         ),
       ),
@@ -30,41 +30,68 @@ class StarryBackground extends StatelessWidget {
           ),
           // Online count indicator
           Positioned(
-            top: 100,
+            top: 130, // Pushed down to avoid header
             left: 0,
             right: 0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(25), // 0.1 * 255
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.black.withAlpha(50),
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 6,
+                        height: 6,
                         decoration: const BoxDecoration(
-                          color: Colors.greenAccent,
+                          color: AppColors.primaryTeal,
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       const Text(
-                        '14128476位Soulers',
+                        '发现 8452367 个有趣的灵魂',
                         style: TextStyle(
-                          color: AppColors.textWhite,
+                          color: Colors.white70,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 1.1,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 10),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+          // Filter indicator
+          Positioned(
+            top: 170, // Below online count
+            right: 16,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(80),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.filter_list, color: Colors.white, size: 20),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '筛选',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 11,
+                  ),
+                )
               ],
             ),
           ),
@@ -81,18 +108,33 @@ class _StarsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withAlpha(127); // 0.5 * 255
+    final paint = Paint();
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 150; i++) {
       double x = random.nextDouble() * size.width;
       double y = random.nextDouble() * size.height;
       double radius = random.nextDouble() * 1.5;
 
-      // Make some stars blink (lower opacity)
-      int alpha = ((random.nextDouble() * 0.8 + 0.2) * 255).round();
+      // Some stars are brighter
+      int alpha = random.nextDouble() > 0.8
+          ? 200 + random.nextInt(55)
+          : 50 + random.nextInt(100);
+
       paint.color = Colors.white.withAlpha(alpha);
 
       canvas.drawCircle(Offset(x, y), radius, paint);
+    }
+
+    // Add some larger glowing stars
+    for (int i = 0; i < 5; i++) {
+      double x = random.nextDouble() * size.width;
+      double y = random.nextDouble() * size.height;
+
+      paint.color = Colors.white.withAlpha(200);
+      canvas.drawCircle(Offset(x, y), 2.5, paint);
+
+      paint.color = Colors.white.withAlpha(50);
+      canvas.drawCircle(Offset(x, y), 8.0, paint);
     }
   }
 

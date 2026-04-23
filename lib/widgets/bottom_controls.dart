@@ -7,75 +7,99 @@ class BottomControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Column(
         children: [
-          _buildActionButton(
-            title: '灵魂匹配',
-            subtitle: 'Soul Match',
-            color: AppColors.buttonBlue,
-            icon: Icons.favorite,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                '点击寻找有趣的灵魂',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 12),
+            ],
           ),
-          _buildActionButton(
-            title: '语音匹配',
-            subtitle: 'Voice Match',
-            color: AppColors.buttonPink,
-            icon: Icons.mic,
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildCircularAction(
+                title: '语音匹配',
+                color1: const Color(0xFFF165A6),
+                color2: const Color(0xFFE94E77),
+                icon: Icons.mic,
+              ),
+              _buildCircularAction(
+                title: '灵魂匹配',
+                color1: const Color(0xFF5D54F6),
+                color2: const Color(0xFF8278F9),
+                icon: Icons.favorite,
+                isLarge: true,
+              ),
+              _buildCircularAction(
+                title: '恋爱铃',
+                color1: const Color(0xFF904CE0),
+                color2: const Color(0xFFB57BF3),
+                icon: Icons.favorite_border,
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildCircularAction({
     required String title,
-    required String subtitle,
-    required Color color,
+    required Color color1,
+    required Color color2,
     required IconData icon,
+    bool isLarge = false,
   }) {
-    return Container(
-      width: 140,
-      height: 60,
-      decoration: BoxDecoration(
-        color: color.withAlpha(230), // 0.9 * 255
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: color.withAlpha(102), // 0.4 * 255
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(width: 8),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(204), // 0.8 * 255
-                  fontSize: 10,
-                ),
-              ),
+    double size = isLarge ? 80 : 64;
+    double iconSize = isLarge ? 36 : 28;
+
+    return Column(
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [color1, color2],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: color1.withAlpha(100),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
+              )
             ],
           ),
-        ],
-      ),
+          child: Center(
+            child: Icon(icon, color: Colors.white, size: iconSize),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        )
+      ],
     );
   }
 }
