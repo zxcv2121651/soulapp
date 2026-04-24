@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color backgroundDark = Color(0xFF101222);
-  static const Color primaryTeal = Color(0xFF16D4C6);
-  static const Color textWhite = Colors.white;
-  static const Color textGrey = Color(0xFFAAAABB);
-  static const Color bottomNavBackground = Color(0xFF181B30);
-  static const Color buttonBlue = Color(0xFF4C87F0);
-  static const Color buttonPink = Color(0xFFF165A6);
-  static const Color buttonPurple = Color(0xFF904CE0);
+  static const Color backgroundDark = Color(0xFF141518);
+  static const Color primaryTeal = Color(0xFF58B4AC);
+  static const Color textLight = Color(0xFFEEEEEE);
+
+  // Soul App Specific Node Colors
+  static const Color nodeMale = Color(0xFFC1F1F2);
+  static const Color nodeFemale = Color(0xFFFBD8D8);
+  static const Color nodeMostActive = Color(0xFFFFFFFF);
+  static const Color nodeMostNew = Color(0xFF9485D8);
+  static const Color nodeBestMatch = Color(0xFF58B4AC);
 }

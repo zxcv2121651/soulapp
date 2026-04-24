@@ -50,11 +50,33 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
       double x = cos(theta) * radiusAtY;
       double z = sin(theta) * radiusAtY;
 
+      // Mimic Soul App Original Android implementation data
+      Color starColor = (i % 2 == 0) ? AppColors.nodeFemale : AppColors.nodeMale;
+      bool hasShadow = false;
+      String matchDescribe = "";
+
+      if (i % 12 == 0) {
+        matchDescribe = "最活跃";
+        starColor = AppColors.nodeMostActive;
+      } else if (i % 20 == 0) {
+        matchDescribe = "最匹配";
+        starColor = AppColors.nodeBestMatch;
+      } else if (i % 33 == 0) {
+        matchDescribe = "最新人";
+        starColor = AppColors.nodeMostNew;
+      } else if (i % 18 == 0) {
+        hasShadow = true;
+        matchDescribe = "最闪耀";
+      }
+
       nodes.add(UserNode(
         id: i.toString(),
         name: fakeNames[i % fakeNames.length],
-        avatarUrl: '', // Using icon instead
         isOnline: i % 4 == 0,
+        starColor: starColor,
+        hasShadow: hasShadow,
+        matchPercent: (i * 2).toString() + "%",
+        matchDescribe: matchDescribe,
         x: x * radius,
         y: y * radius,
         z: z * radius,
@@ -177,72 +199,56 @@ class _PlanetWidgetState extends State<PlanetWidget> with SingleTickerProviderSt
   }
 
   Widget _buildNodeWidget(UserNode node) {
-    bool isSpecial = int.parse(node.id) % 7 == 0;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Stack(
-          children: [
-            Container(
-              width: isSpecial ? 54 : 46,
-              height: isSpecial ? 54 : 46,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.primaries[int.parse(node.id) % Colors.primaries.length].withAlpha(200),
-                    Colors.primaries[(int.parse(node.id) + 1) % Colors.primaries.length].withAlpha(200),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                border: Border.all(color: Colors.white.withAlpha(150), width: 1.5),
-                boxShadow: [
-                  if (isSpecial)
-                    BoxShadow(
-                      color: Colors.white.withAlpha(100),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    )
-                ]
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white.withAlpha(220),
-                  size: isSpecial ? 32 : 26,
-                ),
-              ),
-            ),
-            if (node.isOnline)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Colors.greenAccent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.backgroundDark, width: 2),
-                  ),
-                ),
-              )
-          ],
-        ),
-        const SizedBox(height: 4),
+        // Name on top
         Text(
-          isSpecial ? '99% 匹配' : node.name,
-          style: TextStyle(
-            color: isSpecial ? AppColors.primaryTeal : Colors.white70,
-            fontSize: isSpecial ? 12 : 11,
-            fontWeight: isSpecial ? FontWeight.bold : FontWeight.normal,
-            shadows: const [
+          node.name,
+          style: const TextStyle(
+            color: Color(0xFFEEEEEE),
+            fontSize: 10,
+            shadows: [
               Shadow(color: Colors.black54, blurRadius: 2, offset: Offset(1, 1))
             ]
           ),
-        )
+        ),
+        const SizedBox(height: 2),
+        // Glowing star
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: node.starColor,
+            boxShadow: node.hasShadow ? [
+              BoxShadow(
+                color: node.starColor.withAlpha(200),
+                blurRadius: 10,
+                spreadRadius: 2,
+              )
+            ] : null,
+          ),
+        ),
+        const SizedBox(height: 2),
+        // Match percentage
+        if (node.matchPercent.isNotEmpty)
+          Text(
+            node.matchPercent,
+            style: TextStyle(
+              color: node.hasShadow ? node.starColor : Colors.white,
+              fontSize: 8,
+            ),
+          ),
+        // Match description
+        if (node.matchDescribe.isNotEmpty)
+          Text(
+            node.matchDescribe,
+            style: TextStyle(
+              color: node.hasShadow ? node.starColor : Colors.white,
+              fontSize: 8,
+            ),
+          ),
       ],
     );
   }

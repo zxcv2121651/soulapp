@@ -1,143 +1,98 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import '../utils/colors.dart';
 
-class StarryBackground extends StatelessWidget {
-  final Widget child;
+class StarryBackground extends StatefulWidget {
+  const StarryBackground({super.key});
 
-  const StarryBackground({super.key, required this.child});
+  @override
+  State<StarryBackground> createState() => _StarryBackgroundState();
+}
+
+class _StarryBackgroundState extends State<StarryBackground> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  final List<Star> _stars = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..repeat();
+
+    // Generate random stars
+    final random = Random();
+    for (int i = 0; i < 150; i++) {
+      _stars.add(Star(
+        x: random.nextDouble(),
+        y: random.nextDouble(),
+        size: random.nextDouble() * 2.5 + 0.5,
+        opacity: random.nextDouble() * 0.8 + 0.2,
+        blinkSpeed: random.nextDouble() * 0.5 + 0.1,
+      ));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF14172B),
-            Color(0xFF262C4E),
-            Color(0xFF1A1D36),
-          ],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // Render stars
-          CustomPaint(
-            size: Size.infinite,
-            painter: _StarsPainter(),
-          ),
-          // Online count indicator
-          Positioned(
-            top: 130, // Pushed down to avoid header
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(50),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primaryTeal,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Text(
-                        '发现 8452367 个有趣的灵魂',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 10),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Filter indicator
-          Positioned(
-            top: 170, // Below online count
-            right: 16,
-            child: Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(80),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.filter_list, color: Colors.white, size: 20),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '筛选',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
-                )
-              ],
-            ),
-          ),
-          // Main content
-          child,
-        ],
-      ),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: StarryPainter(_stars, _controller.value),
+          size: Size.infinite,
+        );
+      },
     );
   }
 }
 
-class _StarsPainter extends CustomPainter {
-  final Random random = Random(42); // Fixed seed for consistent stars
+class Star {
+  final double x;
+  final double y;
+  final double size;
+  final double opacity;
+  final double blinkSpeed;
+
+  Star({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.opacity,
+    required this.blinkSpeed,
+  });
+}
+
+class StarryPainter extends CustomPainter {
+  final List<Star> stars;
+  final double animationValue;
+
+  StarryPainter(this.stars, this.animationValue);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
 
-    for (int i = 0; i < 150; i++) {
-      double x = random.nextDouble() * size.width;
-      double y = random.nextDouble() * size.height;
-      double radius = random.nextDouble() * 1.5;
+    for (var star in stars) {
+      double blinkOpacity = (sin(animationValue * pi * 2 * star.blinkSpeed) + 1) / 2;
+      paint.color = Colors.white.withAlpha((star.opacity * blinkOpacity * 255).toInt());
 
-      // Some stars are brighter
-      int alpha = random.nextDouble() > 0.8
-          ? 200 + random.nextInt(55)
-          : 50 + random.nextInt(100);
-
-      paint.color = Colors.white.withAlpha(alpha);
-
-      canvas.drawCircle(Offset(x, y), radius, paint);
-    }
-
-    // Add some larger glowing stars
-    for (int i = 0; i < 5; i++) {
-      double x = random.nextDouble() * size.width;
-      double y = random.nextDouble() * size.height;
-
-      paint.color = Colors.white.withAlpha(200);
-      canvas.drawCircle(Offset(x, y), 2.5, paint);
-
-      paint.color = Colors.white.withAlpha(50);
-      canvas.drawCircle(Offset(x, y), 8.0, paint);
+      canvas.drawCircle(
+        Offset(star.x * size.width, star.y * size.height),
+        star.size,
+        paint,
+      );
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
